@@ -1,0 +1,38 @@
+<div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <h3>MongoDB performance dashboard</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <div class="jumbotron">
+            <div class="container" ng-show="ctrl.state.check">
+                <p>{{ctrl.metrics.content}}</p>
+            </div>
+            <div class="container" ng-hide="ctrl.state.check">
+                <p>Nothing running at the moment :(</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-2 col-lg-2 row" id="side-buttons">
+        <div class="row">
+            <div class="col-sm-6">
+                <button type="button" id="start"
+                        class="btn btn-success btn-lg"
+                        ng-disabled="!ctrl.state.start"
+                        ng-show="ctrl.state.start"
+                        ng-click="ctrl.start()"><b>Start</b></button>
+                <button type="button" id="stop" class="btn btn-danger btn-lg" ng-show="ctrl.state.stop"><b>Stop</b></button>
+            </div>
+            <div class="col-sm-6">
+                <button type="button" id="check"
+                        class="btn btn-lg"
+                        ng-disabled="ctrl.state.checking"
+                        ng-click="ctrl.check()">
+                    <b ng-show="!ctrl.state.checking">Check</b>
+                    <i ng-show="ctrl.state.checking" class="fa fa-spinner" ng-class="{'fa-spin': ctrl.state.checking}"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
