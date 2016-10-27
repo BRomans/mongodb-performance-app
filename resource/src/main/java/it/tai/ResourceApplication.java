@@ -11,9 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -40,12 +38,14 @@ class ResourceApplication implements CommandLineRunner {
     public Elaboration getElaboration() {
         return loadService.getCurrentElaboration().orElse(null);
     }
-    @RequestMapping("/start")
+    @RequestMapping(value = "/start",method = RequestMethod.POST)
     @CrossOrigin(origins="*", maxAge=3600)
-    public Elaboration startElaboration() {
-        return loadService.startElaboration(100000, 4, 1).orElse(null);
+    public Elaboration startElaboration(@RequestParam(required = true) Long numOfEntries,
+                                        @RequestParam(required = true) Integer parallelism,
+                                        @RequestParam(required = true) Integer elaborationTypes) {
+        return loadService.startElaboration(numOfEntries, parallelism, elaborationTypes).orElse(null);
     }
-    @RequestMapping("/stop")
+    @RequestMapping(value = "/stop",method = RequestMethod.POST)
     @CrossOrigin(origins="*", maxAge=3600)
     public Elaboration stopElaboration() {
         return loadService.stopElaboration().orElse(null);

@@ -31,7 +31,8 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
         $timeout(function() {
             $http.get('http://localhost:9000/api/refresh/').then(function(response){
                 console.log("Refresh request");
-                self.metrics = response.data;
+                self.metrics = response.data
+
                 console.log('Elaborazione attuale: ',response.data);
             },function(){
                 //handle error
@@ -48,7 +49,12 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
         self.state.check = true;
         self.state.start = false;
         $timeout(function() {
-            $http.get('http://localhost:9000/api/start/').then(function(response){
+            $http.post('http://localhost:9000/api/start/',
+                {
+                    numOfEntries: 100000,
+                    parallelism: 4,
+                    elaborationTypes: 3
+                }).then(function(response){
                 console.log("Start request");
                 self.metrics = response.data;
                 console.log('Elaborazione attuale: ',response.data);
