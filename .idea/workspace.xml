@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ce7f1eb4-a7e3-4d1a-911b-55507c4dd319" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resource/src/main/java/it/tai/ResourceApplication.java" afterPath="$PROJECT_DIR$/resource/src/main/java/it/tai/ResourceApplication.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ui/src/main/resources/static/js/mongodb/mongodb.js" afterPath="$PROJECT_DIR$/ui/src/main/resources/static/js/mongodb/mongodb.js" />
-    </list>
+    <list default="true" id="ce7f1eb4-a7e3-4d1a-911b-55507c4dd319" name="Default" comment="" />
     <ignored path="mongodb-performance.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/resource/target/" />
@@ -1321,12 +1317,12 @@
       <workItem from="1477556928409" duration="1532000" />
       <workItem from="1477559031648" duration="6672000" />
       <workItem from="1477568738271" duration="13225000" />
-      <workItem from="1477639377831" duration="10181000" />
+      <workItem from="1477639377831" duration="10571000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="52520000" />
+    <option name="totallyTimeSpent" value="52910000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
