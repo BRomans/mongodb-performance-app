@@ -59,7 +59,7 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
             }
         };
        // $timeout(function() {
-        $http.post('http://localhost:9000/api/start/', data, config)
+        $http.post('http://localhost:9000/api/start/', data)
         .then(
             function(response){
                 console.log("Start request");

@@ -41,10 +41,9 @@ class ResourceApplication implements CommandLineRunner {
 
     @RequestMapping(value = "/start",method = RequestMethod.POST)
     @CrossOrigin(origins="*", maxAge=3600)
-    public Elaboration startElaboration(@RequestParam(required = true) Long numOfEntries,
-                                        @RequestParam(required = true) Integer parallelism,
-                                        @RequestParam(required = true) Integer elaborationTypes) {
-        return loadService.startElaboration(numOfEntries, parallelism, elaborationTypes).orElse(null);
+    public Elaboration startElaboration(@RequestBody PostBody post){
+
+        return loadService.startElaboration(post.getNumOfEntries(), post.getParallelism(), post.getElaborationTypes()).orElse(null);
     }
     @RequestMapping(value = "/stop",method = RequestMethod.POST)
     @CrossOrigin(origins="*", maxAge=3600)
@@ -94,7 +93,38 @@ class PostBody{
     private Long numOfEntries;
     private Integer parallelism;
     private Integer elaborationTypes;
+
+    public Long getNumOfEntries() {
+        return numOfEntries;
+    }
+
+    public void setNumOfEntries(Long numOfEntries) {
+        this.numOfEntries = numOfEntries;
+    }
+
+    public Integer getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(Integer parallelism) {
+        this.parallelism = parallelism;
+    }
+
+    public Integer getElaborationTypes() {
+        return elaborationTypes;
+    }
+
+    public void setElaborationTypes(Integer elaborationTypes) {
+        this.elaborationTypes = elaborationTypes;
+    }
+
     PostBody(){}
+
+    PostBody(Long numOfEntries, int parallelism, int elaborationTypes){
+        this.numOfEntries = numOfEntries;
+        this.parallelism = parallelism;
+        this.elaborationTypes = elaborationTypes;
+    }
 
 }
 class Message {

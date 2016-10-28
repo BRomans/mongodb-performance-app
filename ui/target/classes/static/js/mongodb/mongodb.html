@@ -6,12 +6,14 @@
 <div class="row">
     <div class="col-sm-12 col-md-8 col-lg-8">
         <div class="jumbotron">
-            <div class="container" ng-repeat="metric in ctrl.metrics" ng-show="ctrl.state.check">
-                <p>Start Time: {{metric.startTime}}</p>
-                <p>Total Entries: {{metric.totalNoOfEntries}}</p>
-                <p>Current Entries: {{metric.currentNoOfEntries}}</p>
-                <p>Avg Put Time:{{metric.averageEntryPutTime}}</p>
-                <p>Avg Get Time:{{metric.averageEntryPGetTime}}</p>
+            <div class="container" ng-repeat="(key,value) in ctrl.metrics.parallelTasks" ng-show="ctrl.state.check">
+                <ul><p>Thread: {{key}}</p>
+                    <li><p>Start Time: {{value.startTime}}</p></li>
+                    <li><p>Total Entries: {{value.totalNoOfEntries}}</p></li>
+                    <li><p>Current Entries: {{value.currentNoOfEntries}}</p></li>
+                    <li><p>Avg Put Time:{{value.averageEntryPutTime}}</p></li>
+                    <li><p>Avg Get Time:{{value.averageEntryPGetTime}}</p></li>
+                </ul>
             </div>
             <div class="container" ng-hide="ctrl.state.check">
                 <p>Nothing running at the moment :(</p>
