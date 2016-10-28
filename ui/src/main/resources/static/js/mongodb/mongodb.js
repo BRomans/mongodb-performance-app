@@ -48,23 +48,53 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
         self.state.stop = true;
         self.state.check = true;
         self.state.start = false;
-        $timeout(function() {
-            $http.post('http://localhost:9000/api/start/',
-                {
-                    numOfEntries: 100000,
-                    parallelism: 4,
-                    elaborationTypes: 3
-                }).then(function(response){
+        var data = {
+            'numOfEntries': 100000,
+            'parallelism': 4,
+            'elaborationTypes': 3
+        };
+        var config = {
+            headers : {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+            }
+        };
+       // $timeout(function() {
+        $http.post('http://localhost:9000/api/start/', data, config)
+        .then(
+            function(response){
                 console.log("Start request");
                 self.metrics = response.data;
                 console.log('Elaborazione attuale: ',response.data);
-            },function(){
+            },function(response){
                 //handle error
-                console.error("errore di retrieval data");
+                console.error("Impossibile eseguire start()");
+                self.metrics = response.statusText;
+                console.log('Contenuto della response: ',response.data);
+                console.log('Status della response: ',response.statusText);
             }).finally(function() {
                 self.state.checking  = false;
             });
-        }, 2000);
+       // }, 2000);
+/*         $http({
+            url: 'http://localhost:9000/api/start/',
+            method: "POST",
+            data: {
+                'numOfEntries ': 100000,
+                'parallelism': 4,
+                'elaborationTypes': 3
+                }
+            }).then(
+            function success(response){
+                console.log("Start request");
+                self.metrics = response.data;
+                console.log('Elaborazione attuale: ',response.data);
+            },
+            function failure(response){
+                //handle error
+                console.error("Impossibile eseguire start()");
+                self.metrics = response.statusText;
+                console.log('Contenuto della response: ',response.data);
+            });*/
 
     };
     self.stop = function() {
@@ -72,18 +102,27 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
         self.state.stop = false;
         self.state.check = false;
         self.state.start = true;
+        var data = {
+        };
+        var config = {
+            headers : {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+            }
+        };
         $timeout(function() {
-            $http.get('http://localhost:9000/api/stop/').then(function(response){
-                console.log("Stop request");
-                self.metrics = response.data;
-                console.log('Elaborazione attuale: ',response.data);
-            },function(){
-                //handle error
-                console.error("errore di retrieval data");
-            }).finally(function() {
-                self.state.checking  = false;
-            });
-        }, 2000);
+            $http.post('http://localhost:9000/api/stop/', data, config)
+                .then(
+                    function(response){
+                        console.log("Stop request");
+                        self.metrics = response.data;
+                        console.log('Elaborazione attuale: ',response.data);
+                    },function(){
+                        //handle error
+                        console.error("Impossibile eseguire stop()");
+                    }).finally(function() {
+                        self.state.checking  = false;
+                    });
+            }, 2000);
 
     };
 

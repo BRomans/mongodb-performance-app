@@ -38,6 +38,7 @@ class ResourceApplication implements CommandLineRunner {
     public Elaboration getElaboration() {
         return loadService.getCurrentElaboration().orElse(null);
     }
+
     @RequestMapping(value = "/start",method = RequestMethod.POST)
     @CrossOrigin(origins="*", maxAge=3600)
     public Elaboration startElaboration(@RequestParam(required = true) Long numOfEntries,
@@ -88,6 +89,13 @@ class ResourceApplication implements CommandLineRunner {
 
 
     }
+}
+class PostBody{
+    private Long numOfEntries;
+    private Integer parallelism;
+    private Integer elaborationTypes;
+    PostBody(){}
+
 }
 class Message {
     private String id = UUID.randomUUID().toString();
