@@ -1,0 +1,52 @@
+<div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <h3><strong>Performance Dashboard</strong></h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <div class="jumbotron">
+            <div class="container" ng-repeat="(key,value) in ctrl.metrics.parallelTasks" ng-show="ctrl.state.check">
+                <div class="row">
+                    <h4><strong>Thread: {{key}}</strong></h4>
+                    <div  class="alert alert-success" role="alert">
+                       <ul>
+                            <li><p><small>  Start Time: <em>{{value.startTime}}</em></small></p></li>
+                            <li><p><small>  Total Entries: <em>{{value.totalNoOfEntries}}</em></small></p></li>
+                            <li><p><small>  Current Entries: <em>{{value.currentNoOfEntries}}</em></small></p></li>
+                            <li><p><small>  Avg Put Time:<em>{{value.averageEntryPutTime}}</em></small></p></li>
+                            <li><p><small>  Avg Get Time:<em>{{value.averageEntryPGetTime}}</em></small></p></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="container" ng-hide="ctrl.state.check">
+                <div class="alert alert-warning" role="alert"><p>Nothing running at the moment :(</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-2 col-lg-2 row" id="side-buttons">
+        <div class="row">
+            <div class="col-sm-6">
+                <button type="button" id="start"
+                        class="btn btn-success btn-lg"
+                        ng-show="ctrl.state.start"
+                        ng-click="ctrl.start()"><b>Start</b></button>
+                <button type="button" id="stop"
+                        class="btn btn-danger btn-lg"
+                        ng-show="ctrl.state.stop"
+                        ng-click="ctrl.stop()"><b>Stop</b></button>
+            </div>
+            <div class="col-sm-6">
+                <button type="button" id="check"
+                        class="btn btn-lg"
+                        ng-show="ctrl.state.check"
+                        ng-disabled="ctrl.state.checking"
+                        ng-click="ctrl.check()">
+                    <b ng-show="!ctrl.state.checking">Check</b>
+                    <i ng-show="ctrl.state.checking" class="fa fa-spinner" ng-class="{'fa-spin': ctrl.state.checking}"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,28 +1,51 @@
 <div class="row">
     <div class="col-sm-12 col-md-8 col-lg-8">
-        <h3>MongoDB performance dashboard</h3>
+        <h3><strong>Performance Dashboard</strong></h3>
     </div>
 </div>
 <div class="row">
     <div class="col-sm-12 col-md-8 col-lg-8">
         <div class="jumbotron">
-            <div class="container" ng-repeat="(key,value) in ctrl.metrics.parallelTasks" ng-show="ctrl.state.check">
-                <ul><h4>Thread: {{key}}</h4>
-                    <li><p>Start Time: {{value.startTime}}</p></li>
-                    <li><p>Total Entries: {{value.totalNoOfEntries}}</p></li>
-                    <li><p>Current Entries: {{value.currentNoOfEntries}}</p></li>
-                    <li><p>Avg Put Time:{{value.averageEntryPutTime}}</p></li>
-                    <li><p>Avg Get Time:{{value.averageEntryPGetTime}}</p></li>
-                </ul>
+            <div class="container" ng-show="ctrl.state.check">
+                <div class="row">
+                    <div class="alert alert-success" role="alert">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th><strong>Thread</strong></th>
+                                <th><strong>Start Time</strong></th>
+                                <th><strong>Total Entries</strong></th>
+                                <th><strong>Current Entries</strong></th>
+                                <th><strong>Avg Put Time</strong></th>
+                                <th><strong>Avg Get Time</strong></th>
+                                <th><strong>Total Time</strong></th>
+                            </tr>
+                            </thead>
+                            <div>
+                                <tbody class="container" ng-repeat="(key,value) in ctrl.metrics.parallelTasks">
+                                <tr>
+                                    <td>{{key}}</td>
+                                    <td><em>{{value.startTime | date : 'dd/MM/yyyy HH:mm:ss'}}</em></td>
+                                    <td><em>{{value.totalNoOfEntries}}</em></td>
+                                    <td><em>{{value.currentNoOfEntries}}</em></td>
+                                    <td><em>{{value.averageEntryPutTime}}</em></td>
+                                    <td><em>{{value.averageEntryPGetTime}}</em></td>
+                                    <td><em>{{value.totalTime}}</em></td>
+                                </tr>
+                                </tbody>
+                            </div>
+                        </table>
+                    </div>
+                </div>
             </div>
             <div class="container" ng-hide="ctrl.state.check">
-                <p>Nothing running at the moment :(</p>
+                <div class="alert alert-warning" role="alert"><p>Nothing running at the moment :(</p></div>
             </div>
         </div>
     </div>
-    <div class="col-sm-12 col-md-2 col-lg-2 row" id="side-buttons">
+    <div class="col-sm-12 col-md-2 col-lg-2 " id="side-settings">
         <div class="row">
-            <div class="col-sm-6">
+            <div class="col-sm-6 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
                 <button type="button" id="start"
                         class="btn btn-success btn-lg"
                         ng-show="ctrl.state.start"
@@ -32,15 +55,48 @@
                         ng-show="ctrl.state.stop"
                         ng-click="ctrl.stop()"><b>Stop</b></button>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-6 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
                 <button type="button" id="check"
                         class="btn btn-lg"
                         ng-show="ctrl.state.check"
                         ng-disabled="ctrl.state.checking"
                         ng-click="ctrl.check()">
                     <b ng-show="!ctrl.state.checking">Check</b>
-                    <i ng-show="ctrl.state.checking" class="fa fa-spinner" ng-class="{'fa-spin': ctrl.state.checking}"></i>
+                    <i ng-show="ctrl.state.checking" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.checking}"></i>
                 </button>
+            </div>
+        </div>
+        <div class="row" ng-show="ctrl.state.start">
+            <div class="col-sm-6 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+                <form>
+                    <div class="form-group-sm">
+                        <label for="inputNumOfEntries">Entries</label>
+                        <input class="form-control" id="inputNumOfEntries" placeholder="1000" ng-model="ctrl.inputNumOfEntries">
+                    </div>
+                    <div class="form-group-sm">
+                        <label for="parallelism">Threads</label>
+                        <input class="form-control" id="parallelism" placeholder="2,4,8.." ng-model="ctrl.parallelism">
+                    </div>
+                </form>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="elaborationTypes"  ng-model="ctrl.elaborationType" value="1">
+                        GET
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="elaborationTypes"  ng-model="ctrl.elaborationType" value="2">
+                        PUT
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="elaborationTypes"  ng-model="ctrl.elaborationType" value="3">
+                        GET & PUT
+                    </label>
+                </div>
             </div>
         </div>
     </div>

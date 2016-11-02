@@ -3,6 +3,7 @@
  */
 angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
     var self = this;
+    self.elaborationType = 3;
     self.state={
         start: false,
         stop: false,
@@ -44,15 +45,19 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
 
     };
     self.start = function() {
-        console.log('Start function invoked');
+        var elaborationType = self.elaborationType;
+        var parallelism = self.parallelism;
+        var inputNumOfEntries = self.inputNumOfEntries;
+
         self.state.stop = true;
         self.state.check = true;
         self.state.start = false;
         var data = {
-            'numOfEntries': 100000,
-            'parallelism': 4,
-            'elaborationTypes': 3
+            'numOfEntries': inputNumOfEntries,
+            'parallelism': parallelism,
+            'elaborationTypes': elaborationType
         };
+        console.log('Start function invoked',data );
         var config = {
             headers : {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
@@ -75,26 +80,6 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout) {
                 self.state.checking  = false;
             });
        // }, 2000);
-/*         $http({
-            url: 'http://localhost:9000/api/start/',
-            method: "POST",
-            data: {
-                'numOfEntries ': 100000,
-                'parallelism': 4,
-                'elaborationTypes': 3
-                }
-            }).then(
-            function success(response){
-                console.log("Start request");
-                self.metrics = response.data;
-                console.log('Elaborazione attuale: ',response.data);
-            },
-            function failure(response){
-                //handle error
-                console.error("Impossibile eseguire start()");
-                self.metrics = response.statusText;
-                console.log('Contenuto della response: ',response.data);
-            });*/
 
     };
     self.stop = function() {
