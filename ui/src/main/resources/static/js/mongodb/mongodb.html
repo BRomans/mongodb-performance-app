@@ -128,11 +128,11 @@
     <div class="col-sm-12 form-inline">
         <div class="form-group-lg">
             <label for="launchQuery">Query</label>
-            <input class="form-control" id="launchQuery" placeholder="findAllById()" ng-model="">
+            <input class="form-control" id="launchQuery" placeholder="Enter your query" ng-model="ctrl.queryStr">
             <button type="button" id="query"
                     class="btn btn-info"
                     ng-disabled="ctrl.state.query"
-                    ng-click="">
+                    ng-click="ctrl.launchQuery()">
                 <b ng-show="!ctrl.state.query">Launch</b>
                 <i ng-show="ctrl.state.query" class="fa fa-spinner"
                    ng-class="{'fa-spin': ctrl.state.query}"></i>
