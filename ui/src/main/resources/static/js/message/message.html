@@ -1,9 +1,21 @@
 <div class="row">
-    <h3>Greeting</h3>
-    <div class="col-sm-10 col-md-8 col-lg-8">
+    <div class="col-sm-12 col-md-6 col-lg-6">
+        <h3>Status Monitor</h3>
             <div class="container">
-                <p>The ID is {{controller.greeting.id}}</p>
-                <p>The content is {{controller.greeting.content}}</p>
+                <p>Http call ID is {{controller.resource.id}}</p>
+                <div class="alert alert-success col-sm-6" role="alert" >
+                    <p>Resource Server Status:{{controller.resource.content}}</p>
+                </div>
             </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-6 col-lg-6">
+        <div class="container">
+            <p>Http call ID is {{controller.ui.id}}</p>
+            <div class="alert alert-success col-sm-6" role="alert" >
+                <p>UI Server Status:{{controller.ui.content}}</p>
+            </div>
+        </div>
     </div>
 </div>

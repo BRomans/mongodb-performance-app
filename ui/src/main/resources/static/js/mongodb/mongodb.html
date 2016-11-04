@@ -12,13 +12,13 @@
                         <table class="table table-striped">
                             <thead>
                             <tr>
-                                <th><strong>Thread</strong></th>
+                                <th><strong>#</strong></th>
                                 <th><strong>Start Time</strong></th>
                                 <th><strong>Total Entries</strong></th>
                                 <th><strong>Current Entries</strong></th>
                                 <th><strong>Avg Put Time</strong></th>
                                 <th><strong>Avg Get Time</strong></th>
-                                <th><strong>Total Time</strong></th>
+                                <th><strong>Total Time(sec)</strong></th>
                             </tr>
                             </thead>
                             <div>
@@ -55,6 +55,9 @@
                         ng-show="ctrl.state.stop"
                         ng-click="ctrl.stop()"><b>Stop</b></button>
             </div>
+        </div>
+        <br>
+        <div class="row">
             <div class="col-sm-6 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
                 <button type="button" id="check"
                         class="btn btn-lg"
@@ -65,39 +68,86 @@
                     <i ng-show="ctrl.state.checking" class="fa fa-spinner"
                        ng-class="{'fa-spin': ctrl.state.checking}"></i>
                 </button>
+                <div class="container" ng-show="ctrl.state.check">
+                    <h5>Enable Autocheck</h5>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="autoCheck" ng-model="ctrl.autoCheck" value="1">
+                            ON
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="autoCheck" ng-model="ctrl.autoCheck" value="2"
+                                   ng-click="ctrl.stopAutoCheck()">
+                            OFF
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="row" ng-show="ctrl.state.start">
-            <div class="col-sm-6 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
-                <form>
-                    <div class="form-group-sm">
-                        <label for="inputNumOfEntries">Entries</label>
-                        <input class="form-control" id="inputNumOfEntries" placeholder="1000" ng-model="ctrl.inputNumOfEntries">
-                    </div>
-                    <div class="form-group-sm">
-                        <label for="parallelism">Threads</label>
-                        <input class="form-control" id="parallelism" placeholder="2,4,8.." ng-model="ctrl.parallelism">
-                    </div>
-                </form>
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="elaborationTypes"  ng-model="ctrl.elaborationType" value="1">
-                        GET
-                    </label>
-                </div>
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="elaborationTypes"  ng-model="ctrl.elaborationType" value="2">
-                        PUT
-                    </label>
-                </div>
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="elaborationTypes"  ng-model="ctrl.elaborationType" value="3">
-                        GET & PUT
-                    </label>
-                </div>
+
+    </div>
+</div>
+<div class="row" ng-show="ctrl.state.start">
+    <div class="col-sm-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+        <form>
+            <div class="form-group-sm">
+                <label for="inputNumOfEntries">Entries</label>
+                <input class="form-control" id="inputNumOfEntries" placeholder="1000" ng-model="ctrl.inputNumOfEntries">
             </div>
+            <div class="form-group-sm">
+                <label for="parallelism">Threads</label>
+                <input class="form-control" id="parallelism" placeholder="2,4,8.." ng-model="ctrl.parallelism">
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-4">
+        <br>
+        <div class="radio">
+            <label>
+                <input type="radio" name="elaborationTypes" ng-model="ctrl.elaborationType" value="1">
+                PUT
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="elaborationTypes" ng-model="ctrl.elaborationType" value="2">
+                GET
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="elaborationTypes" ng-model="ctrl.elaborationType" value="3">
+                GET & PUT
+            </label>
+        </div>
+    </div>
+</div>
+<div class="row" ng-show="ctrl.state.stop">
+    <div class="col-sm-12 form-inline">
+        <div class="form-group-lg">
+            <label for="launchQuery">Query</label>
+            <input class="form-control" id="launchQuery" placeholder="findAllById()" ng-model="">
+            <button type="button" id="query"
+                    class="btn btn-info"
+                    ng-disabled="ctrl.state.query"
+                    ng-click="">
+                <b ng-show="!ctrl.state.query">Launch</b>
+                <i ng-show="ctrl.state.query" class="fa fa-spinner"
+                   ng-class="{'fa-spin': ctrl.state.query}"></i>
+            </button>
+        </div>
+    </div>
+
+</div>
+<div class="row" ng-show="ctrl.state.stop">
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <h3><strong>Graphic Visualization</strong></h3>
+    </div>
+
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <div class="jumbotron">
         </div>
     </div>
 </div>
