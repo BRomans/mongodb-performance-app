@@ -12,7 +12,7 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout, $i
         check: false,
         checking : false,
     };
-    $http.get('http://localhost:9000/api/').then(function(response) {
+    $http.get('http://172.16.33.56:9000/api/').then(function(response) {
         self.metrics = response.data;
         console.log('Elaborazione attuale: ',response.data);
         if (!response.data) {
@@ -57,7 +57,7 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout, $i
     };
 
     self.refresh = function(){
-        $http.get('http://localhost:9000/api/refresh/').then(function(response){
+        $http.get('http://172.16.33.56:9000/api/refresh/').then(function(response){
             console.log("Refresh request");
             self.metrics = response.data
             console.log('Elaborazione attuale: ',response.data);
@@ -88,7 +88,7 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout, $i
             }
         };
        // $timeout(function() {
-        $http.post('http://localhost:9000/api/start/', data)
+        $http.post('http://172.16.33.56:9000/api/start/', data)
         .then(
             function(response){
                 console.log("Start request");
@@ -121,7 +121,7 @@ angular.module('mongodb', []).controller('mongodb', function($http, $timeout, $i
             }
         };
         $timeout(function() {
-            $http.post('http://localhost:9000/api/stop/', data, config)
+            $http.post('http://172.16.33.56:9000/api/stop/', data, config)
                 .then(
                     function(response){
                         console.log("Stop request");
