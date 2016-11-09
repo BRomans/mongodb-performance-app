@@ -2,6 +2,7 @@ package it.tai.services;
 
 import it.tai.domain.Elaboration;
 import it.tai.domain.Fattura;
+import it.tai.domain.QueryElaboration;
 import it.tai.repository.FatturaRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,7 +33,7 @@ public class MockLoadService implements LoadService {
 
     private Elaboration mockElaboration = null;
 
-    private Elaboration mockQueryElaboration = null;
+    private QueryElaboration myQuery = null;
 
     private ExecutorService executor;
 
@@ -84,6 +85,12 @@ public class MockLoadService implements LoadService {
                     executor.execute(() -> {
                         LOG.info("executor : " + idx + " => " + subtask);
                         int myEntryCount = 0;
+                        int failureCount = 0;
+                        long maxPutTime = 0;
+                        long minPutTime = 0;
+                        long maxGetTime = 0;
+                        long minGetTime = 0;
+                        long failureRate;
                         Instant startTime = Instant.now();
                         Instant stopTime;
                         while (!Thread.currentThread().isInterrupted() && myEntryCount < subtask.getTotalNoOfEntries()) {
@@ -94,19 +101,54 @@ public class MockLoadService implements LoadService {
                                 Fattura fatturaMock = random(Fattura.class);
 
                                 repository.save(fatturaMock);
+                                if(!repository.exists(fatturaMock.getId())){
+                                    System.out.println("Missing record!");
+                                    failureCount++;
+                                }
+
+                                if(failureCount > 0) {
+                                    failureRate = failureCount / myEntryCount;
+                                }else
+                                    failureRate = 0;
                                 subtask.setCurrentNoOfEntries(subtask.getCurrentNoOfEntries() + 1);
+                                subtask.setFailureRate(failureRate);
 
                                 long newTime =  System.currentTimeMillis()- start;
                                 long newAvgPut = (subtask.getAverageEntryPutTime() * myEntryCount + newTime) / (myEntryCount + 1);
 
                                 if ((elaborationTypes & ELABORATION_TYPE_GET) > 0) {
-                                    newTime =  System.currentTimeMillis()- start;
                                     repository.findById(fatturaMock.getId());
+                                    newTime =  System.currentTimeMillis()- start;
                                     long newAvgGet = (subtask.getAverageEntryPGetTime() * myEntryCount + newTime) / (myEntryCount + 1);
                                     subtask.setAverageEntryPGetTime(newAvgGet);
+                                    if(minGetTime == 0){
+                                        minGetTime = newTime;
+                                        subtask.setMinGetTime(minGetTime);
+                                    }
+                                    if(maxGetTime < newTime){
+                                        maxGetTime = newTime;
+                                        subtask.setMaxGetTime(maxGetTime);
+                                    }
+                                    if(newTime < minGetTime){
+                                        minGetTime = newTime;
+                                        subtask.setMinGetTime(minGetTime);
+                                    }
                                 }
                                 if ((elaborationTypes & ELABORATION_TYPE_PUT) > 0) {
                                     subtask.setAverageEntryPutTime(newAvgPut);
+                                    if(minPutTime == 0){
+                                        minPutTime = newTime;
+                                        subtask.setMinGetTime(minPutTime);
+                                    }
+                                    if(maxPutTime < newTime){
+                                        maxPutTime = newTime;
+                                        subtask.setMaxPutTime(maxPutTime);
+                                    }
+                                    if(newTime < minPutTime){
+                                        minPutTime = newTime;
+                                        subtask.setMinPutTime(minPutTime);
+                                    }
+
                                 }
                                 myEntryCount++;
                             } catch (InterruptedException ex) {
@@ -146,27 +188,41 @@ public class MockLoadService implements LoadService {
             writeLock.unlock();
         }
 
+
         return Optional.ofNullable(result);
     }
 
+
+
     @Override
-    public Optional<Elaboration> launchQuery(String query){
-        LOG.info("Launching query: " + query);
+    public QueryElaboration launchQuery(String query, Integer flag){
+        Instant startTime = Instant.now();
+        Instant stopTime;
         writeLock.lock();
         try {
-            repository.save(new Fattura("Michele", "Romani", "Tai Reietti srl", "RMNMHL93R28A470U","00123456789", "via Monviso 16",
-                    "Mantova", "MN", "333117685", "46041", "28/10/1993", "mromani",
-                    "password", "mromani@tai.it"));
-            repository.save(new Fattura("Marco", "Strambelli", "Tai Reietti srl", "MRCSTR93S12A470U","00987654321", "via Schmitd 7",
-                    "Trento", "TN", "3333455422", "38122", "12/12/1993", "mstrambelli",
-                    "password", "mstrambelli@tai.it"));
-            for(Fattura fattura : repository.findByCompany("Tai Reietti srl")){
-                System.out.println(fattura);
-            }
-            System.out.println("Query SUCCESS!");
-        } finally {
+            myQuery =  new QueryElaboration(query, flag, repository);
+            myQuery.executionResultState(true);
+
+        }finally {
             writeLock.unlock();
         }
-        return Optional.ofNullable(mockElaboration);
+        stopTime = Instant.now();
+        myQuery.setExecutionTime(Duration.between(startTime, stopTime).getSeconds());
+        System.out.println("Execution time:" + myQuery.getExecutionTime());
+        return myQuery;
+    }
+
+    @Override
+    public QueryElaboration getQueryElaboration() {
+        LOG.info("getQueryElaboration");
+        QueryElaboration result;
+        readLock.lock();
+        try {
+            result = myQuery;
+        } finally {
+            readLock.unlock();
+        }
+
+        return result;
     }
 }

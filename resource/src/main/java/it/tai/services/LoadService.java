@@ -1,6 +1,7 @@
 package it.tai.services;
 
 import it.tai.domain.Elaboration;
+import it.tai.domain.QueryElaboration;
 
 import java.util.Optional;
 
@@ -16,7 +17,9 @@ public interface LoadService {
 
     Optional<Elaboration> startElaboration(long numOfEntries, int parallelism, int elaborationTypes);
 
-    Optional<Elaboration> launchQuery(String query);
+    QueryElaboration launchQuery(String query, Integer flag);
+
+    public QueryElaboration getQueryElaboration();
 
     Optional<Elaboration> stopElaboration();
 }

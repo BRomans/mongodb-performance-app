@@ -28,6 +28,9 @@ public class Elaboration {
     private long maxPutTime;
     private long minPutTime;
 
+    private long failureRate;
+
+
     private Collection<Elaboration> parallelTasks = new ArrayList<>();
 
     public long getStartTime() {
@@ -124,6 +127,14 @@ public class Elaboration {
         this.minPutTime = minPutTime;
     }
 
+    public long getFailureRate() {
+        return failureRate;
+    }
+
+    public void setFailureRate(long failureRate) {
+        this.failureRate = failureRate;
+    }
+
     public Collection<Elaboration> getParallelTasks() {
         return Collections.unmodifiableCollection(parallelTasks);
     }
@@ -131,6 +142,7 @@ public class Elaboration {
     public void addTask(Elaboration subTask) {
         parallelTasks.add(subTask);
     }
+
 
 
 

@@ -2,6 +2,7 @@ package it.tai;
 
 import it.tai.domain.Elaboration;
 import it.tai.domain.Fattura;
+import it.tai.domain.QueryElaboration;
 import it.tai.repository.FatturaRepository;
 import it.tai.services.LoadService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,13 +69,19 @@ class ResourceApplication implements CommandLineRunner {
         }
         return loadService.startElaboration(post.getNumOfEntries(), post.getParallelism(), post.getElaborationTypes()).orElse(null);
     }
+
     @RequestMapping(value = "/launch",method = RequestMethod.POST)
     @CrossOrigin(origins="*", maxAge=3600)
-    public Elaboration launchQuery(@RequestBody PostBody post){
+    public QueryElaboration launchQuery(@RequestBody PostBody post){
         if(post.getQuery() == null){
-            post.setQuery("findOne()");
+            post.setQuery("No query inserted");
         }
-        return loadService.launchQuery(post.getQuery()).orElse(null);
+        if(post.getFlag() == null){
+            post.setFlag(0);
+        }
+        loadService.launchQuery(post.getQuery(), post.getFlag());
+
+        return loadService.getQueryElaboration();
     }
 
     @RequestMapping(value = "/stop",method = RequestMethod.POST)
@@ -127,6 +135,9 @@ class PostBody{
     private Integer elaborationTypes;
     private String query;
 
+
+    private Integer flag;
+
     public Long getNumOfEntries() {
         return numOfEntries;
     }
@@ -158,10 +169,24 @@ class PostBody{
         this.query = query;
     }
 
+    public Integer getFlag() {
+        return flag;
+    }
+
+    public void setFlag(Integer flag) {
+        this.flag = flag;
+    }
+
+
     PostBody(){}
 
     PostBody(String query){
         this.query = query;
+    }
+
+    PostBody(String query, Integer flag){
+        this.query = query;
+        this.flag = flag;
     }
 
     PostBody(Long numOfEntries, Integer parallelism, Integer elaborationTypes){

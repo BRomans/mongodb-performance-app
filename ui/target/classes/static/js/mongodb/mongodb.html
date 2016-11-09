@@ -4,7 +4,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-sm-12 col-md-8 col-lg-8">
+    <div class="col-sm-12 col-md-11 col-lg-11">
         <div class="jumbotron">
             <div class="container" ng-show="ctrl.state.check">
                 <div class="row">
@@ -19,6 +19,11 @@
                                 <th><strong>Avg Put Time</strong></th>
                                 <th><strong>Avg Get Time</strong></th>
                                 <th><strong>Total Time(sec)</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Max Put Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Min Put Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Max Get Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Min Get Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Failure Rate</strong></th>
                             </tr>
                             </thead>
                             <div>
@@ -31,11 +36,22 @@
                                     <td><em>{{value.averageEntryPutTime}}</em></td>
                                     <td><em>{{value.averageEntryPGetTime}}</em></td>
                                     <td><em>{{value.totalTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.maxPutTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.minPutTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.maxGetTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.minGetTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.failureRate}}%</em></td>
                                 </tr>
                                 </tbody>
                             </div>
                         </table>
                     </div>
+                    <button type="button" class="btn btn-sm" ng-show="ctrl.moreless.more" ng-click="ctrl.showMore()">
+                        more
+                    </button>
+                    <button type="button" class="btn btn-sm" ng-show="ctrl.moreless.less" ng-click="ctrl.showLess()">
+                        less
+                    </button>
                 </div>
             </div>
             <div class="container" ng-hide="ctrl.state.check">
@@ -43,7 +59,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-12 col-md-2 col-lg-2 " id="side-settings">
+    <div class="col-sm-12 col-md-1 col-lg-1 " id="side-settings">
         <div class="row">
             <div class="col-sm-6 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
                 <button type="button" id="start"
@@ -125,21 +141,102 @@
     </div>
 </div>
 <div class="row" ng-show="ctrl.state.stop">
-    <div class="col-sm-12 form-inline">
-        <div class="form-group-lg">
-            <label for="launchQuery">Query</label>
-            <input class="form-control" id="launchQuery" placeholder="Enter your query" ng-model="ctrl.queryStr">
-            <button type="button" id="query"
-                    class="btn btn-info"
-                    ng-disabled="ctrl.state.query"
-                    ng-click="ctrl.launchQuery()">
-                <b ng-show="!ctrl.state.query">Launch</b>
-                <i ng-show="ctrl.state.query" class="fa fa-spinner"
-                   ng-class="{'fa-spin': ctrl.state.query}"></i>
-            </button>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group-lg form-inline">
+                <label for="launchQuery">Query</label>
+                <input class="form-control" id="launchQuery" placeholder="Enter your query" ng-model="ctrl.queryStr">
+                <button type="button" id="query"
+                        class="btn btn-info"
+                        ng-disabled="ctrl.state.query"
+                        ng-click="ctrl.launchQuery(0)"
+                        ng-model="ctrl.queryFlag"
+                >
+                    <b ng-show="!ctrl.state.query">Launch</b>
+                    <i ng-show="ctrl.state.query" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.query}"></i>
+                </button>
+                <p class="form-control-static">Number of executions: </p>
+                <p class="form-control-static">Execution time: </p>
+            </div>
         </div>
     </div>
-
+    <div class="row">
+        <div class="col-sm-12 ">
+            <div class="form-group-lg form-inline">
+                <label for="launchQuery">findAll</label>
+                <button type="button"
+                        class="btn btn-info"
+                        ng-disabled="ctrl.state.query"
+                        ng-click="ctrl.launchQuery(1)"
+                        ng-model="ctrl.queryFlag"
+                >
+                    <b ng-show="!ctrl.state.query">Launch</b>
+                    <i ng-show="ctrl.state.query" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.query}"></i>
+                </button>
+                <p class="form-control-static">Number of executions: </p>
+                <p class="form-control-static">Execution time: </p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group-lg form-inline">
+                <label for="launchQuery">Count</label>
+                <button type="button"
+                        class="btn btn-info"
+                        ng-disabled="ctrl.state.query"
+                        ng-click="ctrl.launchQuery(2)"
+                        ng-model="ctrl.queryFlag"
+                >
+                    <b ng-show="!ctrl.state.query">Launch</b>
+                    <i ng-show="ctrl.state.query" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.query}"></i>
+                </button>
+                <p class="form-control-static">Number of executions: </p>
+                <p class="form-control-static">Execution time: </p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group-lg form-inline">
+                <label for="launchQuery">Insert</label>
+                <button type="button"
+                        class="btn btn-info"
+                        ng-disabled="ctrl.state.query"
+                        ng-click="ctrl.launchQuery(3)"
+                        ng-model="ctrl.queryFlag"
+                >
+                    <b ng-show="!ctrl.state.query">Launch</b>
+                    <i ng-show="ctrl.state.query" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.query}"></i>
+                </button>
+                <p class="form-control-static">Number of executions: </p>
+                <p class="form-control-static">Execution time: </p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group-lg form-inline">
+                <label for="launchQuery">Find</label>
+                <button type="button"
+                        class="btn btn-info"
+                        ng-disabled="ctrl.state.query"
+                        ng-click="ctrl.launchQuery(4)"
+                        ng-model="ctrl.queryFlag"
+                >
+                    <b ng-show="!ctrl.state.query">Launch</b>
+                    <i ng-show="ctrl.state.query" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.query}"></i>
+                </button>
+                <p class="form-control-static">Number of executions: </p>
+                <p class="form-control-static">Execution time: </p>
+            </div>
+        </div>
+    </div>
 </div>
 <div class="row" ng-show="ctrl.state.stop">
     <div class="col-sm-12 col-md-8 col-lg-8">
@@ -147,7 +244,8 @@
     </div>
 
     <div class="col-sm-12 col-md-8 col-lg-8">
-        <div class="jumbotron">
+        <div class="jumbotron" id="downloads">
+            <svg width="650" height="180" viewBox="0 0 650 180"></svg>
         </div>
     </div>
 </div>

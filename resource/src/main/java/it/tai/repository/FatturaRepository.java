@@ -11,6 +11,8 @@ public interface FatturaRepository extends MongoRepository<Fattura, String> {
 
     public Fattura findByUsername(String username);
     public List<Fattura> findByCompany(String company);
+    public List<Fattura> findByCompanyOrderByFirstNameAsc(String company);
     public Fattura findById(String id);
+
 
 }
