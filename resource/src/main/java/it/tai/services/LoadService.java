@@ -17,6 +17,12 @@ public interface LoadService {
 
     Optional<Elaboration> startElaboration(long numOfEntries, int parallelism, int elaborationTypes);
 
+    Optional<Elaboration> clearCurrentRepository();
+
+    Optional<QueryElaboration> launchCountQuery();
+
+    Optional<QueryElaboration> launchComplexQuery();
+
     QueryElaboration launchQuery(String query, Integer flag);
 
     public QueryElaboration getQueryElaboration();

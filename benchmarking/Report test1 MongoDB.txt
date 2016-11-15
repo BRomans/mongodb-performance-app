@@ -1,0 +1,13 @@
+Test Mongo DB
+1. Stress test su Nodi 1 con in esecuzione Mongo DB (database vuoto)
+    Il test è stato lanciato da una macchina fisica con 1.000.000 di entries come obiettivo (Modalità PUT + GET) suddivisi tra 4 threads in parallelo e con visualizzazione grafica dei dati.
+    Dopo un iniziale picco dovuto alle 4 connessioni aperte in contemporanea, i massimi tempi di put/get si sono stabilizzati intorno ai 105/108 ms sul thread più lento ed i minimi tempi di put/get si sono abbassati a 26/28 ms.
+    Dopo la prima stabilizzazione è stata collegata un'altra macchina virtuale dopo circa 60 secondi di esecuzione, con 50.000 entries come obiettivo (PUT + GET) suddivisi tra 8 threads in parallelo, senza visualizzazione grafica.
+    Ciò ha causato un leggero incremento dei tempi di put/get  a 162/165 ms sul thread più lento, mentre i tempi minimi sono migliorati a 21/22 ms sul thread più veloce.
+    E' stato successivamente lanciata un'altra esecuzione dopo circa 100 secondi dall'inizio del test con obiettivo 50.000 entries (Modalità PUT + GET) suddivisi tra 8 threads in parallelo e senza visualizzazione grafica, su un'altra macchina virtuale, per un totale di 20threads in parallelo.
+    Si è verificato un altro picco nei valori di max put/get fino a 219/221 ms, mentre nessun cambiamento rilevante nei tempi minimi.
+    Durante il test le macchine virtuali sono state più volte spente e rilanciate con gli stessi obiettivi, e sono state eseguite periodicamente 2 query per un totale di 11 findByCompany() (last execution time 561ms) e 20 CountAll() (last execution time 3ms). Ci sono stati lievi picchi di performance ma non significativi in seguito
+    a questi eventi. Ci sono stati invece picchi molto più significativi in seguito al maggior numero di dati presenti nel database che hanno portato ad un incremento dei tempi max di get/put ad intervalli lunghi ma apparentemente non regolari (circa ogni 300-1000 secondi si sono verificati cali di performance).
+    Il test è stato fermato dopo 4969 secondi di esecuzione con un totale di 729896 entries scritte sul database. Non sono state rilevate failures nell'inserimento dei valori (possibile bug nel software, da verificare).
+    Al termine del test il tempo massimo di put in generale è stato di 583 ms, il tempo massimo di get in generale è stato di 585 ms entrambi sullo stesso thread. Il tempo minimo di put è stato di 21 ms mentre il tempo minimo di get è stato di 22 ms su due processi differenti.
+    La velocità media di inserimento si è aggirata intorno ai 27,86 ms, il tempo medio d i get invece è stato di 23,5 ms

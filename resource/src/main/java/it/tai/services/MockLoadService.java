@@ -33,6 +33,10 @@ public class MockLoadService implements LoadService {
 
     private Elaboration mockElaboration = null;
 
+    private QueryElaboration countQuery = new QueryElaboration(0L, 0L);
+
+    private QueryElaboration complexQuery = new QueryElaboration(0L, 0L);
+
     private QueryElaboration myQuery = null;
 
     private ExecutorService executor;
@@ -45,7 +49,7 @@ public class MockLoadService implements LoadService {
 
     @Override
     public Optional<Elaboration> getCurrentElaboration() {
-        LOG.info("getCurrentElaboration");
+        //LOG.info("getCurrentElaboration");
         Optional<Elaboration> result = Optional.empty();
 
         readLock.lock();
@@ -63,7 +67,6 @@ public class MockLoadService implements LoadService {
     public Optional<Elaboration> startElaboration(long numOfEntries, int parallelism, int elaborationTypes) {
         LOG.info("startElaboration: " + numOfEntries + " - " + parallelism + " - " + elaborationTypes);
         writeLock.lock();
-        repository.deleteAll();
         try {
             if (null == mockElaboration) {
                 long now = System.currentTimeMillis();
@@ -98,62 +101,62 @@ public class MockLoadService implements LoadService {
 
                             try {
                                 TimeUnit.MILLISECONDS.sleep(0);
-                                Fattura fatturaMock = random(Fattura.class);
+                                Fattura fatturaMock = random(Fattura.class, "id");
+                                repository.insert(fatturaMock);
 
-                                repository.save(fatturaMock);
-                                if(!repository.exists(fatturaMock.getId())){
-                                    System.out.println("Missing record!");
-                                    failureCount++;
-                                }
-
-                                if(failureCount > 0) {
+                                if (failureCount > 0) {
                                     failureRate = failureCount / myEntryCount;
-                                }else
+                                } else {
                                     failureRate = 0;
-                                subtask.setCurrentNoOfEntries(subtask.getCurrentNoOfEntries() + 1);
+                                }
+                                subtask.setCurrentNoOfEntries(myEntryCount + 1);
                                 subtask.setFailureRate(failureRate);
 
-                                long newTime =  System.currentTimeMillis()- start;
-                                long newAvgPut = (subtask.getAverageEntryPutTime() * myEntryCount + newTime) / (myEntryCount + 1);
+                                long newPutTime = System.currentTimeMillis() - start;
+                                long newAvgPut = (subtask.getAverageEntryPutTime() * myEntryCount + newPutTime) / (myEntryCount + 1);
 
                                 if ((elaborationTypes & ELABORATION_TYPE_GET) > 0) {
                                     repository.findById(fatturaMock.getId());
-                                    newTime =  System.currentTimeMillis()- start;
-                                    long newAvgGet = (subtask.getAverageEntryPGetTime() * myEntryCount + newTime) / (myEntryCount + 1);
+                                    long newGetTime = System.currentTimeMillis() - start;
+                                    long newAvgGet = (subtask.getAverageEntryPGetTime() * myEntryCount + newGetTime) / (myEntryCount + 1);
                                     subtask.setAverageEntryPGetTime(newAvgGet);
-                                    if(minGetTime == 0){
-                                        minGetTime = newTime;
+                                    if (minGetTime == 0) {
+                                        minGetTime = newGetTime;
                                         subtask.setMinGetTime(minGetTime);
                                     }
-                                    if(maxGetTime < newTime){
-                                        maxGetTime = newTime;
+                                    if (maxGetTime < newGetTime) {
+                                        maxGetTime = newGetTime;
                                         subtask.setMaxGetTime(maxGetTime);
                                     }
-                                    if(newTime < minGetTime){
-                                        minGetTime = newTime;
+                                    if (newGetTime < minGetTime) {
+                                        minGetTime = newGetTime;
                                         subtask.setMinGetTime(minGetTime);
                                     }
                                 }
                                 if ((elaborationTypes & ELABORATION_TYPE_PUT) > 0) {
                                     subtask.setAverageEntryPutTime(newAvgPut);
-                                    if(minPutTime == 0){
-                                        minPutTime = newTime;
+                                    if (minPutTime == 0) {
+                                        minPutTime = newPutTime;
                                         subtask.setMinGetTime(minPutTime);
                                     }
-                                    if(maxPutTime < newTime){
-                                        maxPutTime = newTime;
+                                    if (maxPutTime < newPutTime) {
+                                        maxPutTime = newPutTime;
                                         subtask.setMaxPutTime(maxPutTime);
                                     }
-                                    if(newTime < minPutTime){
-                                        minPutTime = newTime;
+                                    if (newPutTime < minPutTime) {
+                                        minPutTime = newPutTime;
                                         subtask.setMinPutTime(minPutTime);
                                     }
 
                                 }
-                                myEntryCount++;
+
                             } catch (InterruptedException ex) {
                                 LOG.error(ex);
+                                failureCount++;
+                            } finally {
+                                myEntryCount++;
                             }
+
                             stopTime = Instant.now();
                             subtask.setTotalTime(Duration.between(startTime, stopTime).getSeconds());
                         }
@@ -192,24 +195,64 @@ public class MockLoadService implements LoadService {
         return Optional.ofNullable(result);
     }
 
+    @Override
+    public Optional<Elaboration> clearCurrentRepository() {
+        LOG.info("clearCurrentRepository");
+        writeLock.lock();
+        Elaboration result = mockElaboration;
+        try {
+            repository.deleteAll();
+            LOG.info("Count: " + repository.count());
+        } finally {
+            writeLock.unlock();
+        }
 
+        return Optional.ofNullable(result);
+    }
 
     @Override
-    public QueryElaboration launchQuery(String query, Integer flag){
+    public Optional<QueryElaboration> launchCountQuery() {
+        LOG.info("countAll launched");
         Instant startTime = Instant.now();
         Instant stopTime;
         writeLock.lock();
+        QueryElaboration result = countQuery;
         try {
-            myQuery =  new QueryElaboration(query, flag, repository);
-            myQuery.executionResultState(true);
-
-        }finally {
+            if (null != result) {
+                result.countAll(repository);
+                stopTime = Instant.now();
+                result.setExecutionTime(Duration.between(startTime, stopTime).toMillis());
+            }
+        } finally {
             writeLock.unlock();
         }
-        stopTime = Instant.now();
-        myQuery.setExecutionTime(Duration.between(startTime, stopTime).getSeconds());
-        System.out.println("Execution time:" + myQuery.getExecutionTime());
-        return myQuery;
+
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<QueryElaboration> launchComplexQuery() {
+        LOG.info("complex Query launched");
+        Instant startTime = Instant.now();
+        Instant stopTime;
+        writeLock.lock();
+        QueryElaboration result = countQuery;
+        try {
+            if (null != result) {
+                result.complexQuery(repository);
+                stopTime = Instant.now();
+                result.setExecutionTime(Duration.between(startTime, stopTime).toMillis());
+            }
+        } finally {
+            writeLock.unlock();
+        }
+
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public QueryElaboration launchQuery(String query, Integer flag) {
+        return null;
     }
 
     @Override

@@ -1,0 +1,218 @@
+package it.tai;
+
+import it.tai.domain.Elaboration;
+import it.tai.domain.Fattura;
+import it.tai.domain.QueryElaboration;
+import it.tai.repository.FatturaRepository;
+import it.tai.services.LoadService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static io.github.benas.randombeans.api.EnhancedRandom.random;
+
+@SpringBootApplication
+@RestController
+@RequestMapping("/api")
+class ResourceApplication implements CommandLineRunner {
+
+    @Autowired
+    private FatturaRepository repository;
+
+    @Autowired
+    private LoadService loadService;
+
+	@RequestMapping("/")
+	@CrossOrigin(origins="*", maxAge=3600)
+	public Elaboration none() {
+        return loadService.getCurrentElaboration().orElse(null);
+	}
+
+    @RequestMapping("/status")
+    @CrossOrigin(origins="*", maxAge=3600)
+    @ResponseBody
+    public Map<String, Object> home() {
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("id", UUID.randomUUID().toString());
+        model.put("content", "  Running");
+        return model;
+    }
+
+    @RequestMapping("/refresh")
+    @CrossOrigin(origins="*", maxAge=3600)
+    public Elaboration getElaboration() {
+        return loadService.getCurrentElaboration().orElse(null);
+    }
+
+    @RequestMapping(value = "/start",method = RequestMethod.POST)
+    @CrossOrigin(origins="*", maxAge=3600)
+    public Elaboration startElaboration(@RequestBody PostBody post){
+        if(post.getNumOfEntries() == null){
+            post.setNumOfEntries(Long.valueOf(10000));
+        }
+        if(post.getParallelism() == null) {
+            post.setParallelism(2);
+        }
+        if(post.getElaborationTypes() == null){
+            post.setElaborationTypes(2);
+        }
+        return loadService.startElaboration(post.getNumOfEntries(), post.getParallelism(), post.getElaborationTypes()).orElse(null);
+    }
+
+    @RequestMapping(value = "/launch",method = RequestMethod.POST)
+    @CrossOrigin(origins="*", maxAge=3600)
+    public QueryElaboration launchQuery(@RequestBody PostBody post){
+        if(post.getQuery() == null){
+            post.setQuery("No query inserted");
+        }
+        if(post.getFlag() == null){
+            post.setFlag(0);
+        }
+        loadService.launchQuery(post.getQuery(), post.getFlag());
+
+        return loadService.getQueryElaboration();
+    }
+
+    @RequestMapping(value = "/stop",method = RequestMethod.POST)
+    @CrossOrigin(origins="*", maxAge=3600)
+    public Elaboration stopElaboration() {
+        return loadService.stopElaboration().orElse(null);
+    }
+
+	public static void main(String[] args) {
+		SpringApplication.run(ResourceApplication.class, args);
+	}
+
+    @Override
+    public void run(String... args) throws Exception {
+        repository.deleteAll();
+
+        //Save a couple of fatturas
+        repository.save(new Fattura("Michele", "Romani", "Tai Reietti srl", "RMNMHL93R28A470U","00123456789", "via Monviso 16",
+                "Mantova", "MN", "333117685", "46041", "28/10/1993", "mromani",
+                "password", "mromani@tai.it"));
+        repository.save(new Fattura("Marco", "Strambelli", "Tai Reietti srl", "MRCSTR93S12A470U","00987654321", "via Schmitd 7",
+                "Trento", "TN", "3333455422", "38122", "12/12/1993", "mstrambelli",
+                "password", "mstrambelli@tai.it"));
+        Fattura fatturaMock = random(Fattura.class);
+        System.out.println(fatturaMock);
+        // fetch all fatturas
+        System.out.println("Fatture trovate con findALL():");
+        System.out.println("------------------------------");
+        for(Fattura fattura : repository.findAll()){
+            System.out.println(fattura);
+        }
+        System.out.println();
+
+        // fetch an individual customer
+        System.out.println("Fatture trovate con findByUsername('mromani'):");
+        System.out.println("----------------------------------------------");
+        System.out.println(repository.findByUsername("mromani"));
+
+        System.out.println("Fatture trovate con findByCompany('Tai Reietti srl'):");
+        System.out.println("-------------------------------------------------");
+        for(Fattura fattura : repository.findByCompany("Tai Reietti srl")){
+            System.out.println(fattura);
+        }
+
+
+    }
+}
+class PostBody{
+    private Long numOfEntries;
+    private Integer parallelism;
+    private Integer elaborationTypes;
+    private String query;
+
+
+    private Integer flag;
+
+    public Long getNumOfEntries() {
+        return numOfEntries;
+    }
+
+    public void setNumOfEntries(Long numOfEntries) {
+        this.numOfEntries = numOfEntries;
+    }
+
+    public Integer getParallelism() {
+        return parallelism;
+    }
+
+    public void setParallelism(Integer parallelism) {
+        this.parallelism = parallelism;
+    }
+
+    public Integer getElaborationTypes() {
+        return elaborationTypes;
+    }
+
+    public void setElaborationTypes(Integer elaborationTypes) {
+        this.elaborationTypes = elaborationTypes;
+    }
+    public String getQuery() {
+        return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public Integer getFlag() {
+        return flag;
+    }
+
+    public void setFlag(Integer flag) {
+        this.flag = flag;
+    }
+
+
+    PostBody(){}
+
+    PostBody(String query){
+        this.query = query;
+    }
+
+    PostBody(String query, Integer flag){
+        this.query = query;
+        this.flag = flag;
+    }
+
+    PostBody(Long numOfEntries, Integer parallelism, Integer elaborationTypes){
+        this.numOfEntries = numOfEntries;
+        this.parallelism = parallelism;
+        this.elaborationTypes = elaborationTypes;
+    }
+
+}
+class Message {
+    private String id = UUID.randomUUID().toString();
+    private String content;
+
+
+    Message() {}
+
+    public Message(String content) {
+        this.content = content;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+}

@@ -1,0 +1,224 @@
+<div class="row">
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <h3><strong>Performance Dashboard</strong></h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 col-md-11 col-lg-11">
+        <div class="jumbotron">
+            <div class="container" ng-show="ctrl.state.check">
+                <div class="row">
+                    <div class="alert alert-success" role="alert">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th><strong>#</strong></th>
+                                <th><strong>Start Time</strong></th>
+                                <th><strong>Total Entries</strong></th>
+                                <th><strong>Current Entries</strong></th>
+                                <th><strong>Avg Put Time</strong></th>
+                                <th><strong>Avg Get Time</strong></th>
+                                <th><strong>Total Time(sec)</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Max Put Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Min Put Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Max Get Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Min Get Time</strong></th>
+                                <th ng-show="ctrl.moreless.less"><strong>Failure Rate</strong></th>
+                            </tr>
+                            </thead>
+                            <div>
+                                <tbody class="container" ng-repeat="(key,value) in ctrl.metrics.parallelTasks">
+                                <tr>
+                                    <td>{{key}}</td>
+                                    <td><em>{{value.startTime | date : 'dd/MM/yyyy HH:mm:ss'}}</em></td>
+                                    <td><em>{{value.totalNoOfEntries}}</em></td>
+                                    <td><em>{{value.currentNoOfEntries}}</em></td>
+                                    <td><em>{{value.averageEntryPutTime}}</em></td>
+                                    <td><em>{{value.averageEntryPGetTime}}</em></td>
+                                    <td><em>{{value.totalTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.maxPutTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.minPutTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.maxGetTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.minGetTime}}</em></td>
+                                    <td ng-show="ctrl.moreless.less"><em>{{value.failureRate}}%</em></td>
+                                </tr>
+                                </tbody>
+                            </div>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-sm" ng-show="ctrl.moreless.more" ng-click="ctrl.showMore()">
+                        more
+                    </button>
+                    <button type="button" class="btn btn-sm" ng-show="ctrl.moreless.less" ng-click="ctrl.showLess()">
+                        less
+                    </button>
+                </div>
+            </div>
+            <div class="container" ng-hide="ctrl.state.check">
+                <div class="alert alert-warning" role="alert"><p>Nothing running at the moment :(</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-1 col-lg-1 " id="side-settings">
+        <div class="row">
+            <div class="col-sm-3 col-md-12 col-lg-12">
+                <button type="button" id="start"
+                        class="btn btn-success btn-lg"
+                        ng-show="ctrl.state.start"
+                        ng-disabled="ctrl.state.starting"
+                        ng-click="ctrl.start()">
+                    <b ng-show="!ctrl.state.starting">Start</b>
+                    <i ng-show="ctrl.state.starting" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.starting}"></i></button>
+                <button type="button" id="stop"
+                        class="btn btn-danger btn-lg"
+                        ng-show="ctrl.state.stop"
+                        ng-disabled="ctrl.state.stopping"
+                        ng-click="ctrl.stop()"><b ng-show="!ctrl.state.stopping">Stop</b><i
+                        ng-show="ctrl.state.stopping" class="fa fa-spinner"
+                        ng-class="{'fa-spin': ctrl.state.stopping}"></i></button>
+            </div>
+            <div class="col-sm-3 col-md-12 col-lg-12">
+                <button type="button" id="clearDb"
+                        class="btn btn-warning btn-lg"
+                        ng-show="ctrl.state.start"
+                        ng-disabled="ctrl.state.clearing"
+                        ng-click="ctrl.clearDb()"><b ng-show="!ctrl.state.clearing">ClearDB</b><i
+                        ng-show="ctrl.state.clearing" class="fa fa-spinner"
+                        ng-class="{'fa-spin': ctrl.state.clearing}"></i></button>
+            </div>
+            <div class="col-sm-3 col-md-12 col-lg-12">
+                <button type="button" id="check"
+                        class="btn btn-lg"
+                        ng-show="ctrl.state.check"
+                        ng-disabled="ctrl.state.checking"
+                        ng-click="ctrl.check()">
+                    <b ng-show="!ctrl.state.checking">Check</b>
+                    <i ng-show="ctrl.state.checking" class="fa fa-spinner"
+                       ng-class="{'fa-spin': ctrl.state.checking}"></i>
+                </button>
+            </div>
+            <div class="col-sm-3 col-md-12 col-lg-12">
+                <div class="container" ng-show="ctrl.state.check">
+                    <h5>Enable Autocheck</h5>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="autoCheck" ng-model="ctrl.autoCheck" value="1">
+                            ON
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="autoCheck" ng-model="ctrl.autoCheck" value="2"
+                                   ng-click="ctrl.stopAutoCheck()">
+                            OFF
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" ng-show="ctrl.state.start">
+    <div class="col-sm-4 col-sm-offset-1 col-md-offset-1 col-lg-offset-1">
+        <form>
+            <div class="form-group-sm">
+                <label for="inputNumOfEntries">Entries</label>
+                <input class="form-control" id="inputNumOfEntries" placeholder="1000" ng-model="ctrl.inputNumOfEntries">
+            </div>
+            <div class="form-group-sm">
+                <label for="parallelism">Threads</label>
+                <input class="form-control" id="parallelism" placeholder="2,4,8.." ng-model="ctrl.parallelism">
+            </div>
+        </form>
+    </div>
+    <div class="col-sm-4">
+        <br>
+        <div class="radio">
+            <label>
+                <input type="radio" name="elaborationTypes" ng-model="ctrl.elaborationType" value="1">
+                PUT
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="elaborationTypes" ng-model="ctrl.elaborationType" value="2">
+                GET
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" name="elaborationTypes" ng-model="ctrl.elaborationType" value="3">
+                GET & PUT
+            </label>
+        </div>
+    </div>
+</div>
+<div class="row" ng-show="ctrl.state.stop">
+    <div class="col-sm-12 col-md-8 col-lg-8">
+        <h3><strong>Graphic Visualization</strong></h3>
+    </div>
+</div>
+
+<div class="row" ng-show="ctrl.state.stop">
+    <div class="col-sm-12 col-md-11 col-lg-11 ">
+        <div class="jumbotron">
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-6" id="maxPutTime">
+                    <svg width="500" height="280" viewBox="0 0 500 280"></svg>
+                </div>
+                <div class="col-sm-12 col-md-12 col-lg-6" id="minPutTime">
+                    <svg width="500" height="280" viewBox="0 0 500 280"></svg>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-6" id="maxGetTime">
+                    <svg width="500" height="280" viewBox="0 0 500 280"></svg>
+                </div>
+                <div class="col-sm-12 col-md-12 col-lg-6" id="minGetTime">
+                    <svg width="500" height="280" viewBox="0 0 500 280"></svg>
+                </div>
+            </div>
+            <div class="row">
+                <div id="currentEntries">
+                    <svg width="800" height="400" viewBox="0 0 800 400"></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" ng-show="ctrl.state.stop">
+    <div class="col-sm-6 col-md-2 col-lg-2 ">
+        <div class="form-group-lg form-inline">
+            <label>Complex Query</label>
+            <button type="button"
+                    class="btn btn-info"
+                    ng-disabled="ctrl.state.stopping"
+                    ng-click="ctrl.launchComplex()">
+                <b ng-show="!ctrl.state.launchingCount">Launch</b>
+                <i ng-show="ctrl.state.launchingCount" class="fa fa-spinner"
+                   ng-class="{'fa-spin': ctrl.state.launchingCount}"></i>
+            </button>
+            <p class="form-control-static">Executions: {{ctrl.counters.launchComplexCounter}} </p>
+            <p class="form-control-static">Execution time (ms): {{ctrl.complexData.executionTime}} </p>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-2 col-lg-2">
+        <div class="form-group-lg form-inline">
+            <label>Count</label>
+            <button type="button"
+                    class="btn btn-info"
+                    ng-disabled="ctrl.state.stopping"
+                    ng-click="ctrl.launchCount()">
+                <b ng-show="!ctrl.state.launchingCount">Launch</b>
+                <i ng-show="ctrl.state.launchingCount" class="fa fa-spinner"
+                   ng-class="{'fa-spin': ctrl.state.launchingCount}"></i>
+            </button>
+            <p class="form-control-static">Executions: {{ctrl.counters.launchCountCounter}}</p>
+            <p class="form-control-static">Execution time (ms): {{ctrl.countData.executionTime}}</p>
+            <p class="form-control-static">Count: {{ctrl.countData.count}} </p>
+        </div>
+    </div>
+</div>
+
+

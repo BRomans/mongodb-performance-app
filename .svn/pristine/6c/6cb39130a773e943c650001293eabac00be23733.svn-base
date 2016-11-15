@@ -1,0 +1,10 @@
+it\tai\domain\Elaboration.class
+it\tai\repository\FatturaRepository.class
+it\tai\domain\FatturaExtended.class
+it\tai\domain\QueryElaboration.class
+it\tai\services\MockLoadService.class
+it\tai\PostBody.class
+it\tai\services\LoadService.class
+it\tai\ResourceApplication.class
+it\tai\Message.class
+it\tai\domain\Fattura.class

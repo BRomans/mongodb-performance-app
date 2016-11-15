@@ -1,11 +1,13 @@
 package it.tai;
 
+import io.github.benas.randombeans.api.EnhancedRandom;
 import it.tai.domain.Elaboration;
 import it.tai.domain.Fattura;
 import it.tai.domain.QueryElaboration;
 import it.tai.repository.FatturaRepository;
 import it.tai.services.LoadService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,25 +17,25 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.*;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 
+
+//mongodb ip address: 172.16.34.76 pass:123ciuc0
 @SpringBootApplication
 @RestController
 @RequestMapping("/api")
-class ResourceApplication implements CommandLineRunner {
-
-    @Autowired
-    private FatturaRepository repository;
+public class ResourceApplication implements CommandLineRunner {
 
     @Autowired
     private LoadService loadService;
+    
+    private static String[] ARGS;
 
-	@RequestMapping("/")
+    @RequestMapping("/")
 	@CrossOrigin(origins="*", maxAge=3600)
 	public Elaboration none() {
         return loadService.getCurrentElaboration().orElse(null);
@@ -55,8 +57,14 @@ class ResourceApplication implements CommandLineRunner {
         return loadService.getCurrentElaboration().orElse(null);
     }
 
-    @RequestMapping(value = "/start",method = RequestMethod.POST)
+    @RequestMapping("/clearDb")
     @CrossOrigin(origins="*", maxAge=3600)
+    public Elaboration clearDb() {
+        return loadService.clearCurrentRepository().orElse(null);
+    }
+
+    @RequestMapping(value = "/start",method = RequestMethod.POST)
+    @CrossOrigin(origins="*", maxAge=2000)
     public Elaboration startElaboration(@RequestBody PostBody post){
         if(post.getNumOfEntries() == null){
             post.setNumOfEntries(Long.valueOf(10000));
@@ -68,6 +76,18 @@ class ResourceApplication implements CommandLineRunner {
             post.setElaborationTypes(2);
         }
         return loadService.startElaboration(post.getNumOfEntries(), post.getParallelism(), post.getElaborationTypes()).orElse(null);
+    }
+
+    @RequestMapping(value = "/launchCount")
+    @CrossOrigin(origins="*", maxAge=3600)
+    public QueryElaboration launchCount(){
+        return loadService.launchCountQuery().orElse(null);
+    }
+
+    @RequestMapping(value = "/launchComplex")
+    @CrossOrigin(origins="*", maxAge=3600)
+    public QueryElaboration launchComplex(){
+        return loadService.launchComplexQuery().orElse(null);
     }
 
     @RequestMapping(value = "/launch",method = RequestMethod.POST)
@@ -91,42 +111,59 @@ class ResourceApplication implements CommandLineRunner {
     }
 
 	public static void main(String[] args) {
-		SpringApplication.run(ResourceApplication.class, args);
+        SpringApplication.run(ResourceApplication.class, args);
+
 	}
 
     @Override
     public void run(String... args) throws Exception {
-        repository.deleteAll();
+        ARGS = args;
+        if(ARGS.length > 0){
+            if(ARGS[0].equals("Y") && ARGS.length==1){
+                System.out.println("Resource server launched with command line options");
+                Boolean exit = false;
+                Scanner scan = new Scanner(System.in);
+                String option;
+                while(!exit){
+                    System.out.println("Choose an option: \n1)Start load test\n2)Clear Database \n3)Stop Current Elaboration \n4)Exit");
+                    option = scan.next();
+                    switch(option){
+                        case "1":
+                            System.out.println("Select options to start load test");
+                            System.out.println("How many entries?");
+                            Integer entries = Integer.valueOf(scan.next());
+                            System.out.println("How many threads?");
+                            Integer parallelism = Integer.valueOf(scan.next());
+                            System.out.println("Elaboration type?(PUT=1, GET=2)");
+                            Integer elaborationType = Integer.valueOf(scan.next());
+                            loadService.startElaboration(entries, parallelism,elaborationType);
+                            break;
+                        case "2":
+                            System.out.println("Clearing Database...");
+                            loadService.clearCurrentRepository();
+                            break;
+                        case "3":
+                            loadService.stopElaboration();
+                            break;
+                        case "4":
+                            System.out.println("Exit Resource Application? (Y/N)");
+                            option = scan.next();
+                            if(option.equals("Y") || option.equals("y")){
+                                exit = true;
+                                System.exit(0);
+                            }
+                            break;
+                        default:
+                            System.out.println("No option has been selected!");
+                            break;
+                    }
+                }
 
-        //Save a couple of fatturas
-        repository.save(new Fattura("Michele", "Romani", "Tai Reietti srl", "RMNMHL93R28A470U","00123456789", "via Monviso 16",
-                "Mantova", "MN", "333117685", "46041", "28/10/1993", "mromani",
-                "password", "mromani@tai.it"));
-        repository.save(new Fattura("Marco", "Strambelli", "Tai Reietti srl", "MRCSTR93S12A470U","00987654321", "via Schmitd 7",
-                "Trento", "TN", "3333455422", "38122", "12/12/1993", "mstrambelli",
-                "password", "mstrambelli@tai.it"));
-        Fattura fatturaMock = random(Fattura.class);
-        System.out.println(fatturaMock);
-        // fetch all fatturas
-        System.out.println("Fatture trovate con findALL():");
-        System.out.println("------------------------------");
-        for(Fattura fattura : repository.findAll()){
-            System.out.println(fattura);
+
+            }
+        }else{
+            System.out.println("No command line arguments");
         }
-        System.out.println();
-
-        // fetch an individual customer
-        System.out.println("Fatture trovate con findByUsername('mromani'):");
-        System.out.println("----------------------------------------------");
-        System.out.println(repository.findByUsername("mromani"));
-
-        System.out.println("Fatture trovate con findByCompany('Tai Reietti srl'):");
-        System.out.println("-------------------------------------------------");
-        for(Fattura fattura : repository.findByCompany("Tai Reietti srl")){
-            System.out.println(fattura);
-        }
-
-
     }
 }
 class PostBody{

@@ -6,7 +6,10 @@ angular.module('message', []).controller('message', function($http) {
 	$http.get('/status/').then(function(response) {
 		self.ui = response.data;
 	});
-	$http.get('http://localhost:27017/').then(function(response) {
-		self.mongo = response.data;
-	});
+	$http.get('http://172.16.34.76:27017/').then(function(response) {
+		self.mongo = "Connected";
+	}), function () {
+		//handle error
+		self.mongo = "Not Connected :(";
+	};
 });
