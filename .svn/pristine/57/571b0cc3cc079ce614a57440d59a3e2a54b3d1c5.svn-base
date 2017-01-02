@@ -1,0 +1,12 @@
+it\tai\repository\FatturaRepository.class
+it\tai\domain\FatturaExtended.class
+it\tai\services\HealthIndicator.class
+it\tai\services\MockLoadService.class
+it\tai\services\LoadService.class
+it\tai\Message.class
+it\tai\domain\Fattura.class
+it\tai\domain\Elaboration.class
+it\tai\domain\QueryElaboration.class
+it\tai\PostBody.class
+it\tai\repository\MongoHealthIndicator.class
+it\tai\ResourceApplication.class

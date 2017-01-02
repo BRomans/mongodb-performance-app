@@ -66,7 +66,7 @@
                         class="btn btn-success btn-lg"
                         ng-show="ctrl.state.start"
                         ng-disabled="ctrl.state.starting"
-                        ng-click="ctrl.start()">
+                        ng-click="ctrl.start(); ctrl.check()">
                     <b ng-show="!ctrl.state.starting">Start</b>
                     <i ng-show="ctrl.state.starting" class="fa fa-spinner"
                        ng-class="{'fa-spin': ctrl.state.starting}"></i></button>
@@ -130,6 +130,24 @@
                 <label for="parallelism">Threads</label>
                 <input class="form-control" id="parallelism" placeholder="2,4,8.." ng-model="ctrl.parallelism">
             </div>
+            <div class="form-group-sm">
+                <label for="address">Machine Address</label>
+                <div class="form-inline">
+                    <input class="form-control" id="address" placeholder="localhost:9000" ng-model="ctrl.address">
+                    <button type="button"
+                            class="btn btn-info"
+                            ng-click="ctrl.executionState()">
+                        <b>Check State</b>
+                    </button>
+                </div>
+                <div class="form-group-sm">
+                    <label>Available Clients on Tainet</label>
+                    <p>fatturapa.tainet: 172.16.34.61</p>
+                    <p>fatturapa2.tainet: 172.16.34.72</p>
+                    <p>fatturapa-pg.tainet: 172.16.34.60</p>
+                </div>
+            </div>
+
         </form>
     </div>
     <div class="col-sm-4">
@@ -186,39 +204,116 @@
             </div>
         </div>
     </div>
-</div>
-<div class="row" ng-show="ctrl.state.stop" >
-    <div class="col-sm-6 col-md-2 col-lg-2 " ng-hide="ctrl.state.stopping">
-        <div class="form-group-lg form-inline">
-            <label>Complex Query</label>
+    <div class="col-sm-12 col-md-1 col-lg-1 " id="graphs-settings" ng-hide="ctrl.state.stopping">
+        <div class="row">
             <button type="button"
-                    class="btn btn-info"
-                    ng-disabled="ctrl.state.launchingComplex"
-                    ng-click="ctrl.launchComplex()">
-                <b ng-show="!ctrl.state.launchingComplex">Launch</b>
-                <i ng-show="ctrl.state.launchingComplex" class="fa fa-spinner"
-                   ng-class="{'fa-spin': ctrl.state.launchingComplex}"></i>
+                    class="btn btn-lg btn-info"
+                    ng-disabled="ctrl.state.drawingGraphs"
+                    ng-click="ctrl.drawGraphs()">
+                <b ng-show="!ctrl.state.drawingGraphs">Draw</b>
+                <i ng-show="ctrl.state.drawingGraphs" class="fa fa-spinner"
+                   ng-class="{'fa-spin': ctrl.state.drawingGraphs}"></i>
             </button>
-            <p class="form-control-static">Executions: {{ctrl.counters.launchComplexCounter}} </p>
-            <p class="form-control-static">Last Execution time (ms): {{ctrl.complexData.executionTime}} </p>
         </div>
-    </div>
-    <div class="col-sm-6 col-md-2 col-lg-2" ng-hide="ctrl.state.stopping">
-        <div class="form-group-lg form-inline">
-            <label>Count</label>
+        <div class="row">
             <button type="button"
-                    class="btn btn-info"
-                    ng-disabled="ctrl.state.launchingCount"
-                    ng-click="ctrl.launchCount()">
-                <b ng-show="!ctrl.state.launchingCount">Launch</b>
-                <i ng-show="ctrl.state.launchingCount" class="fa fa-spinner"
-                   ng-class="{'fa-spin': ctrl.state.launchingCount}"></i>
+                    class="btn btn-lg btn-warning"
+                    ng-disabled="ctrl.state.drawingGraphs"
+                    ng-click="ctrl.autoDrawGraphs()">
+                <b ng-show="!ctrl.state.drawingGraphs">AutoDraw</b>
+                <i ng-show="ctrl.state.drawingGraphs" class="fa fa-spinner"
+                   ng-class="{'fa-spin': ctrl.state.drawingGraphs}"></i>
             </button>
-            <p class="form-control-static">Executions: {{ctrl.counters.launchCountCounter}}</p>
-            <p class="form-control-static">Last Execution time (ms): {{ctrl.countData.executionTime}}</p>
-            <p class="form-control-static">Count: {{ctrl.countData.count}} </p>
+        </div>
+        <div class="row">
+            <button type="button"
+                    class="btn btn-lg btn-danger"
+                    ng-disabled="!ctrl.state.drawingGraphs"
+                    ng-click="ctrl.stopDraw()">Stop
+            </button>
         </div>
     </div>
 </div>
+<div class="row" ng-show="ctrl.state.stop">
+    <div class="col-sm-12 col-md-11 col-lg-11 ">
+        <div class="row">
+            <div class="col-sm-6 col-md-2 col-lg-2 " ng-hide="ctrl.state.stopping">
+                <div class="form-group-lg form-inline">
+                    <label>Complex Query</label>
+                    <button type="button"
+                            class="btn btn-info"
+                            ng-disabled="ctrl.state.launchingComplex"
+                            ng-click="ctrl.launchComplex()">
+                        <b ng-show="!ctrl.state.launchingComplex">Launch</b>
+                        <i ng-show="ctrl.state.launchingComplex" class="fa fa-spinner"
+                           ng-class="{'fa-spin': ctrl.state.launchingComplex}"></i>
+                    </button>
+                    <p class="form-control-static">Executions: {{ctrl.counters.launchComplexCounter}} </p>
+                    <p class="form-control-static">Last Execution time (ms): {{ctrl.complexData.executionTime}} </p>
+                    <p class="form-control-static">Count: {{ctrl.complexData.count}} </p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-2 col-lg-2" ng-hide="ctrl.state.stopping">
+                <div class="form-group-lg form-inline">
+                    <label>Count</label>
+                    <button type="button"
+                            class="btn btn-info"
+                            ng-disabled="ctrl.state.launchingCount"
+                            ng-click="ctrl.launchCount()">
+                        <b ng-show="!ctrl.state.launchingCount">Launch</b>
+                        <i ng-show="ctrl.state.launchingCount" class="fa fa-spinner"
+                           ng-class="{'fa-spin': ctrl.state.launchingCount}"></i>
+                    </button>
+                    <p class="form-control-static">Executions: {{ctrl.counters.launchCountCounter}}</p>
+                    <p class="form-control-static">Last Execution time (ms): {{ctrl.countData.executionTime}}</p>
+                    <p class="form-control-static">Count: {{ctrl.countData.count}} </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-md-1 col-lg-1 " id="query-settings" ng-hide="ctrl.state.stopping">
+        <div class="row">
+            <button type="button"
+                    class="btn btn-lg btn-info"
+                    ng-disabled="ctrl.state.launchingQueries"
+                    ng-click="ctrl.launchQuery()">
+                <b ng-show="!ctrl.state.launchingQueries">LaunchAll</b>
+                <i ng-show="ctrl.state.launchingQueries" class="fa fa-spinner"
+                   ng-class="{'fa-spin': ctrl.state.launchingQueries}"></i>
+            </button>
+        </div>
+        <div class="row">
+            <button type="button"
+                    class="btn btn-lg btn-warning"
+                    ng-disabled="ctrl.state.launchingQueries"
+                    ng-click="ctrl.launchAutoQuery()">
+                <b ng-show="!ctrl.state.launchingQueries">AutoLaunch</b>
+                <i ng-show="ctrl.state.launchingQueries" class="fa fa-spinner"
+                   ng-class="{'fa-spin': ctrl.state.launchingQueries}"></i>
+            </button>
+        </div>
+        <div class="row">
+            <button type="button"
+                    class="btn btn-lg btn-danger"
+                    ng-disabled="!ctrl.state.launchingQueries"
+                    ng-click="ctrl.stopAutoLaunchQuery()">StopQueries
+            </button>
+        </div>
+        <div class="row">
+            <p>Execution Time: {{ctrl.lastExecutionTimeGraph }}</p>
+        </div>
+    </div>
+</div>
+<!--<div class="row" ng-show="ctrl.state.stop">
+    <div class="col-sm-12 col-md-11 col-lg-11 ">
+        <div class="jumbotron">
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-6" id="lastExecTime">
+                    <svg width="500" height="280" viewBox="0 0 500 280"></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>-->
 
 

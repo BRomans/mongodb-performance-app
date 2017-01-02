@@ -1,0 +1,15 @@
+security.password: password
+server.port: 9000
+spring.data.mongodb.host=172.16.34.63
+spring.data.mongodb.port=27020
+spring.data.mongodb.database=test
+endpoints.cors.allowed-headers=*
+endpoints.cors.allowed-origins=*
+endpoints.cors.allowed-methods=GET,POST
+endpoints.health.sensitive=true
+management.health.mongo.enabled=true
+logging.level.org.springframework.web=INFO
+logging.level.guru.springframework.controllers=DEBUG
+logging.level.org.hibernate=ERROR
+logging.file=logs/mongo-resource.log
+

@@ -3,16 +3,20 @@
  */
 angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $interval) {
     var self = this;
+    self.address = 'localhost:9000';
     self.elaborationType = 3;
     self.autoCheck = 2;
     self.queryFlag = 2;
     var promiseFetch;
-    var promiseGraph;
+    var promiseQuery;
+    var promiseDraw;
     var maxPutGraph;
     var minPutGraph;
     var maxGetGraph;
     var minGetGraph;
     var entryGraph;
+    var lastExecTimeGraph = [];
+    var counterAuto = 0;
 
     self.counters = {
         launchCountCounter: 0,
@@ -29,6 +33,8 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
         clearing: false,
         stopping: false,
         launchingCount: false,
+        launchingQueries: false,
+        drawingGraphs: false,
     };
 
     self.moreless = {
@@ -38,7 +44,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
     };
 
     //retrieve data from resource server to set up GUI on launch
-    $http.get('http://localhost:9000/api/').then(function (response) {
+    $http.get('http://' + self.address + '/api/').then(function (response) {
         self.metrics = response.data;
         console.log('Elaborazione attuale: ', response.data);
         if (!response.data) {
@@ -54,6 +60,25 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
         }
     });
 
+    //retrieve data from resource server to set up GUI on launch
+    self.executionState = function () {
+        $http.get('http://' + self.address + '/api/').then(function (response) {
+            self.metrics = response.data;
+            console.log('Elaborazione attuale: ', response.data);
+            if (!response.data) {
+                // case NO elaboration active
+                self.state.start = true;
+                self.state.stop = false;
+                self.state.check = false;
+            } else {
+                // case elaboration active
+                self.state.stop = true;
+                self.state.start = false;
+                self.state.check = true;
+            }
+        });
+    };
+
     //call refresh() 1 or n times, depending on the ON/OFF option
     self.check = function () {
         var autoCheck = self.autoCheck;
@@ -64,7 +89,6 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
         if (autoCheck == 2) {
             $timeout(function () {
                 self.fetchData();
-                self.updateGraph();
                 self.state.checking = false;
             }, 2000);
         }
@@ -73,11 +97,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             promiseFetch = $interval(function () {
                 self.fetchData();
                 console.log("Refreshed again");
-                self.updateGraph();
-            }, 5000);
-            promiseGraph = $interval(function () {
-
-            }, 5000);
+            }, 1000);
         }
 
     };
@@ -85,14 +105,13 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
     //stop refresh() function if ON option is active
     self.stopAutoCheck = function () {
         $interval.cancel(promiseFetch);
-        $interval.cancel(promiseGraph);
         self.state.checking = false;
         console.log(self.state.checking);
     };
 
     //retrieve data from resource server
     self.fetchData = function () {
-        $http.get('http://localhost:9000/api/refresh/').then(function (response) {
+        $http.get('http://' + self.address + '/api/refresh/').then(function (response) {
             console.log("Refresh request");
             self.metrics = response.data;
             console.log('Elaborazione attuale: ', response.data);
@@ -139,7 +158,6 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
                 maxGetGraph[i].push(maxGetContent);
                 minGetGraph[i].push(minGetContent);
                 entryGraph[i].push(entryContent);
-
             }
         }, function () {
             console.error("errore di retrieval data");
@@ -173,7 +191,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             self.state.stop = true;
             self.state.check = true;
             self.state.start = false;
-            $http.post('http://localhost:9000/api/start/', data)
+            $http.post('http://' + self.address + '/api/start/', data)
                 .then(
                     function (response) {
                         console.log("Start request");
@@ -195,8 +213,6 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
                 self.state.starting = false;
             });
         }, 2000);
-
-
     };
 
     //stop the stress test
@@ -212,6 +228,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
         self.countData = null;
         self.complexData = null;
         self.deinitGraphs();
+        self.updateGraph();
 
         var data = {};
         var config = {
@@ -220,7 +237,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             }
         };
         $timeout(function () {
-            $http.post('http://localhost:9000/api/stop/', data, config)
+            $http.post('http://' + self.address + '/api/stop/', data, config)
                 .then(
                     function (response) {
                         console.log("Stop request");
@@ -258,6 +275,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
         maxGetGraph = [];
         minGetGraph = [];
         entryGraph = [];
+        lastExecTimeGraph = [];
     };
 
     //init to null value all graphs
@@ -267,6 +285,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
         maxGetGraph = null;
         minGetGraph = null;
         entryGraph = null;
+        lastExecTimeGraph = null;
     };
 
     //fetch data for dynamic graph
@@ -280,6 +299,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             width: 500,
             height: 280,
             right: 40,
+            legend: ['thread[0]', 'thread[1]', 'thread[2]', 'thread[3]', 'thread[4]', 'thread[5]'],
             target: '#maxPutTime',
             x_accessor: 'totalTime',
             y_accessor: 'maxPutTime',
@@ -293,6 +313,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             width: 500,
             height: 280,
             right: 40,
+            legend: ['thread[0]', 'thread[1]', 'thread[2]', 'thread[3]', 'thread[4]', 'thread[5]'],
             target: '#minPutTime',
             x_accessor: 'totalTime',
             y_accessor: 'minPutTime',
@@ -306,6 +327,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             width: 500,
             height: 280,
             right: 40,
+            legend: ['thread[0]', 'thread[1]', 'thread[2]', 'thread[3]', 'thread[4]', 'thread[5]'],
             target: '#maxGetTime',
             x_accessor: 'totalTime',
             y_accessor: 'maxGetTime',
@@ -319,6 +341,7 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             width: 500,
             height: 280,
             right: 40,
+            legend: ['thread[0]', 'thread[1]', 'thread[2]', 'thread[3]', 'thread[4]', 'thread[5]'],
             target: '#minGetTime',
             x_accessor: 'totalTime',
             y_accessor: 'minGetTime',
@@ -332,17 +355,56 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
             width: 800,
             height: 400,
             right: 40,
+            legend: ['thread[0]', 'thread[1]', 'thread[2]', 'thread[3]', 'thread[4]', 'thread[5]'],
             target: '#currentEntries',
             x_accessor: 'totalTime',
             y_accessor: 'currentEntries',
         });
+        //plot query last execution times
+       /* MG.data_graphic({
+            title: "Execution time",
+            description: "This graphic shows complex query execution time over time",
+            data: lastExecTimeGraph,
+            missing_is_zero: true,
+            width: 800,
+            height: 400,
+            right: 40,
+            target: '#lastExecTime',
+            x_accessor: 'launchComplexCounter',
+            y_accessor: 'executionTime',
+        });*/
+    };
+
+    //draw all graphs using existing data
+    self.drawGraphs = function () {
+        self.state.drawingGraphs = true;
+        $timeout(function () {
+            self.updateGraph();
+            console.log("Drawing Graphs");
+            self.state.drawingGraphs = false;
+        }, 2000);
+    };
+
+    //start drawing all graphs using existing data and updating them every t time
+    self.autoDrawGraphs = function () {
+        self.state.drawingGraphs = true;
+        promiseDraw = $interval(function () {
+            console.log("Auto Drawing Graphs");
+            self.updateGraph();
+        }, 1000);
+    };
+
+    //stop the automatic drawing of the graphs
+    self.stopDraw = function () {
+        $interval.cancel(promiseDraw);
+        self.state.drawingGraphs = false;
     };
 
     //pialla all the db
     self.clearDb = function () {
         self.state.clearing = true;
         $timeout(function () {
-            $http.get('http://localhost:9000/api/clearDb/').then(function (response) {
+            $http.get('http://' + self.address + '/api/clearDb/').then(function (response) {
                 console.log("Clear Database");
             }, function () {
                 console.error("errore di chiamata");
@@ -354,12 +416,11 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
     };
 
     //launch count
-    //launch a test query during test phase
     self.launchCount = function () {
         self.state.launchingCount = true;
         console.log('launchCount function invoked');
         $timeout(function () {
-            $http.get('http://localhost:9000/api/launchCount/').then(function (response) {
+            $http.get('http://' + self.address + '/api/launchCount/').then(function (response) {
                 console.log("Count launched");
                 console.log("Count content", response.data);
                 self.countData = response.data;
@@ -379,10 +440,24 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
         self.state.launchingComplex = true;
         console.log('launchComplex function invoked');
         $timeout(function () {
-            $http.get('http://localhost:9000/api/launchComplex/').then(function (response) {
+            $http.get('http://' + self.address + '/api/launchComplex/').then(function (response) {
                 console.log("Complex launched");
                 console.log("Complex content", response.data);
                 self.complexData = response.data;
+                var lastExecTime = self.complexData.executionTime;
+                lastExecTimeGraph.push(lastExecTime);
+                console.log("Execution time vector: " + lastExecTimeGraph);
+                /*var lastExecTime = {
+                    'launchComplexCounter' : self.launchComplexCounter,
+                    'executionTime' : self.complexData.executionTime,
+                };
+                if (lastExecTimeGraph[self.launchComplexCounter] == null) {
+                    lastExecTimeGraph[self.launchComplexCounter] = [];
+                }
+                lastExecTimeGraph[self.launchComplexCounter].push(lastExecTime);
+                for(var i=0; i < lastExecTimeGraph.size; i++) {
+                    console.log("Execution time vector["+ i + "]: " + lastExecTimeGraph[i]);
+                }*/
             }, function () {
                 //handle error
                 console.error("Impossibile eseguire launchComplex()");
@@ -394,36 +469,35 @@ angular.module('mongodb', []).controller('mongodb', function ($http, $timeout, $
 
     };
 
-    self.launchQuery = function (queryFlag) {
-        var query = self.queryStr;
+    self.launchQuery = function () {
+        self.state.launchingQueries = true;
+        console.log("Launching Queries - Auto:false");
+        $timeout(function () {
+            self.launchCount();
+            self.launchComplex();
+            self.state.launchingQueries = false;
+        }, 2000);
+    };
 
-        console.log("flag:", queryFlag);
-        self.state.stop = true;
-        self.state.check = true;
-        self.state.start = false;
-        var data = {
-            'query': query,
-            'flag': queryFlag,
-        };
-        console.log('Start function invoked', data);
-        var config = {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8;'
+    self.launchAutoQuery = function () {
+        self.state.launchingQueries = true;
+        promiseQuery = $interval(function () {
+            console.log("Launching Queries - Auto:true");
+            console.log(self.state.launchingQueries);
+            counterAuto++;
+            if(counterAuto <= 750){
+                self.launchComplex();
+            }else{
+                self.stopAutoLaunchQuery();
             }
-        };
-        // $timeout(function() {
-        $http.post('http://localhost:9000/api/launch/', data)
-            .then(
-                function (response) {
-                    console.log("Query launched");
-                }, function (response) {
-                    //handle error
-                    console.error("Impossibile eseguire launch()");
-                }).finally(function () {
-            self.state.checking = false;
-        });
+        }, 8000);
 
-        // }, 2000);
+    };
 
+    self.stopAutoLaunchQuery = function () {
+        self.state.launchingQueries = false;
+        $interval.cancel(promiseQuery);
+        counterAuto = 0;
+        console.log(self.state.launchingQueries);
     };
 });
