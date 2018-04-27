@@ -1,1 +1,9 @@
-A Java Spring application to perform stress test on MongoDb. Actually under development and it will take some time to be functional as I’m not an hardcore developer, feel free to fork&contribute or just take the code for your own use.
+A Java Spring application to perform stress tests on MongoDb. 
+The software is actually in alpha version and it is not entirely configurable for easy use.
+Results of the tests and description of the experiment can be found in my dissertation repository, here on Github.
+I'm planning to finish this software someday adding the support for other NoSql databases, more statistically meaningful values to reports and some other cool functions.
+Any contribute is well accepted.
+
+April 27th, 2018.
+
+Michele Romani
